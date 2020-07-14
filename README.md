@@ -22,9 +22,8 @@ While the state transition adopted:
 ## Dependencies 
 
 ```
-sudo apt-get install libeigen3-dev
-sudo apt-get install libflann-dev
-sudo apt-get install python3-matplotlib
+sudo apt-get install libeigen3-dev libflann-dev python3-matplotlib python-dev python-dev libflann-dev
+
 ```
 
 ## Run the c++ code
@@ -33,7 +32,16 @@ git clone https://github.com/mive93/tracker_CLASS
 cd tracker_CLASS/c++
 mkdir build
 cd build
-cmake ..
+```
+build in Release or Debug with one the following commands
+
+```
+cmake -DCMAKE_BUILD_TYPE=Release .. 
+cmake -DCMAKE_BUILD_TYPE=Debug .. 
+```
+
+and finally
+```
 make
 ./tracker
 ```
