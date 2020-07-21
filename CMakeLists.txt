@@ -7,10 +7,19 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS} -O3")
 
 include_directories( BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include /usr/include/python2.7 )
 
+find_package(pybind11 REQUIRED)
+
 file(GLOB class-tracker-SRC "src/*.cpp")
-set(class-tracker-LIBS python2.7)
+# set(Python_LIBRARY /usr/lib/aarch64-linux-gnu/libpython3.6m.so CACHE FILEPATH "")
+# set(Python_INCLUDE_DIR /usr/include/python3.6m CACHE FILEPATH "")
+# find_package(Python 3.6 REQUIRED COMPONENTS Interpreter Development)
+# include_directories(BEFORE /usr/include/python3.6)
+find_package(PythonLibs 3)
+include_directories(BEFORE ${PYTHON_INCLUDE_DIRS})
 add_library(class-tracker SHARED ${class-tracker-SRC})
-target_link_libraries(class-tracker ${class-tracker-LIBS} )
+pybind11_add_module(track SHARED ${class-tracker-SRC})
+target_link_libraries(class-tracker ${class-tracker-LIBS})
+target_link_libraries(track PUBLIC ${class-tracker-LIBS})
 
 #-------------------------------------------------------------------------------
 # Build executables

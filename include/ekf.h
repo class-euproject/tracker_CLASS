@@ -29,6 +29,13 @@ class EKF
 {
 public:
   using EKFMatrixF = Eigen::Matrix<float, -1, -1>;
+  int nStates;
+  float dt;
+  state xEst;
+  EKFMatrixF Q;
+  EKFMatrixF R;
+  EKFMatrixF P;
+  EKFMatrixF H;
 
   EKF();
   EKF(const int n_states, const float dt_, const EKFMatrixF &Q_, const EKFMatrixF &R_, const state &in_state);
@@ -38,6 +45,7 @@ public:
   state getEstimatedState();
 
 private:
+    /*
   int nStates;
   float dt;
   state xEst;
@@ -45,6 +53,7 @@ private:
   EKFMatrixF R;
   EKFMatrixF P;
   EKFMatrixF H;
+     */
 
   state stateTransition();
   EKFMatrixF jacobian(const state &x);
