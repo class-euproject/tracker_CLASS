@@ -14,7 +14,7 @@ using namespace tracking;
 
 // TODO: how to update trackers in tracking to take into account the info already tracked
 // TODO: x, y -> is it latitude, longitude?
-std::tuple<std::vector<Tracker>, std::vector<bool>, int> track2(std::vector<obj_m>& frame, float dt, int n_states, int initial_age, int age_threshold, std::vector<Tracker> &trackers, std::vector<bool> &trackerIndexes, int curIndex)
+std::tuple<std::vector<Tracker>, std::vector<bool>, int> track2(std::vector<obj_m>& frame, std::vector<Tracker> &trackers, std::vector<bool> &trackerIndexes, int curIndex)
 {
     /*geodetic_converter::GeodeticConverter gc;
     gc.initialiseReference(44.655540, 10.934315, 0);
@@ -29,6 +29,8 @@ std::tuple<std::vector<Tracker>, std::vector<bool>, int> track2(std::vector<obj_
     }*/
     // NOT NEEDED AS DATA FROM YOLO ALREADY IN METERS FORMAT
 
+    int initial_age = -5, age_threshold = -8, n_states = 5;
+    float dt = 0.03;
 
     Tracking tracking(n_states, dt, initial_age);
     tracking.setAgeThreshold(age_threshold);
