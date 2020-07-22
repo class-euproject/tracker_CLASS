@@ -6,13 +6,15 @@
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
 
+using namespace tracking;
+
 namespace py = pybind11;
 
 using namespace tracking;
 
 // TODO: how to update trackers in tracking to take into account the info already tracked
 // TODO: x, y -> is it latitude, longitude?
-std::tuple<std::vector<Tracker>, bool*, int> track2(std::vector<obj_m>& frame, float dt, int n_states, int initial_age, int age_threshold, std::vector<Tracker> &trackers, bool *trackerIndexes, int curIndex)
+std::tuple<std::vector<Tracker>, std::vector<bool>, int> track2(std::vector<obj_m>& frame, float dt, int n_states, int initial_age, int age_threshold, std::vector<Tracker> &trackers, std::vector<bool> &trackerIndexes, int curIndex)
 {
     /*geodetic_converter::GeodeticConverter gc;
     gc.initialiseReference(44.655540, 10.934315, 0);
@@ -27,14 +29,24 @@ std::tuple<std::vector<Tracker>, bool*, int> track2(std::vector<obj_m>& frame, f
     }*/
     // NOT NEEDED AS DATA FROM YOLO ALREADY IN METERS FORMAT
 
+
     Tracking tracking(n_states, dt, initial_age);
     tracking.setAgeThreshold(age_threshold);
+    tracking.trackers = trackers;
     /** TODO by BSC: Changed from private to public */
-    tracking.trackerIndexes = trackerIndexes;
+    for (int i = 0; i < trackerIndexes.size(); i++) {
+        tracking.trackerIndexes[i] = trackerIndexes[i];
+    }
+    // tracking.trackerIndexes = trackerIndexes;
     tracking.curIndex = curIndex;
     /** **/
     tracking.track(frame);
-    return std::make_tuple(tracking.getTrackers(), tracking.trackerIndexes, tracking.curIndex); // TODO: getters needed
+    std::vector<bool> newTrackerIndexes(MAX_INDEX);
+    for (int i = 0; i < MAX_INDEX; i++) {
+        newTrackerIndexes[i] = tracking.trackerIndexes[i];
+    }
+    auto tuple = std::make_tuple(tracking.getTrackers(), newTrackerIndexes, tracking.curIndex);
+    return tuple; // TODO: getters needed
     //return tracking.getTrackers();
 }
 

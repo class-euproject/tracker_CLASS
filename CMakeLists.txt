@@ -14,12 +14,12 @@ file(GLOB class-tracker-SRC "src/*.cpp")
 # set(Python_INCLUDE_DIR /usr/include/python3.6m CACHE FILEPATH "")
 # find_package(Python 3.6 REQUIRED COMPONENTS Interpreter Development)
 # include_directories(BEFORE /usr/include/python3.6)
-find_package(PythonLibs 3)
+# find_package(PythonLibs 3)
 include_directories(BEFORE ${PYTHON_INCLUDE_DIRS})
 add_library(class-tracker SHARED ${class-tracker-SRC})
 pybind11_add_module(track SHARED ${class-tracker-SRC})
-target_link_libraries(class-tracker ${class-tracker-LIBS})
-target_link_libraries(track PUBLIC ${class-tracker-LIBS})
+target_link_libraries(class-tracker ${class-tracker-LIBS} ${PYTHON_LIBRARIES})
+target_link_libraries(track PUBLIC ${class-tracker-LIBS} ${PYTHON_LIBRARIES})
 
 #-------------------------------------------------------------------------------
 # Build executables
