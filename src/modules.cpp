@@ -1,6 +1,6 @@
 #include "Tracker.h"
 #include "Tracking.h"
-#include <time.h>
+#include <ctime>
 #include <tuple>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -16,19 +16,6 @@ using namespace tracking;
 // TODO: x, y -> is it latitude, longitude?
 std::tuple<std::vector<Tracker>, std::vector<bool>, int> track2(std::vector<obj_m>& frame, std::vector<Tracker> &trackers, std::vector<bool> &trackerIndexes, int curIndex)
 {
-    /*geodetic_converter::GeodeticConverter gc;
-    gc.initialiseReference(44.655540, 10.934315, 0);
-    double east, north, up;
-
-    int it = 0;
-    for (auto t : frame){
-    gc.geodetic2Enu(t.x_, t.y_, 0, &east, &north, &up);
-    t.x_ = east;
-    t.y_ = north;
-    frame[it++] = t;
-    }*/
-    // NOT NEEDED AS DATA FROM YOLO ALREADY IN METERS FORMAT
-
     int initial_age = -5, age_threshold = -8, n_states = 5;
     float dt = 0.03;
 
@@ -47,9 +34,7 @@ std::tuple<std::vector<Tracker>, std::vector<bool>, int> track2(std::vector<obj_
     for (int i = 0; i < MAX_INDEX; i++) {
         newTrackerIndexes[i] = tracking.trackerIndexes[i];
     }
-    auto tuple = std::make_tuple(tracking.getTrackers(), newTrackerIndexes, tracking.curIndex);
-    return tuple; // TODO: getters needed
-    //return tracking.getTrackers();
+    return std::make_tuple(tracking.getTrackers(), newTrackerIndexes, tracking.curIndex); // TODO: getters needed
 }
 
 
