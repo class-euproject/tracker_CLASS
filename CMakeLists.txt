@@ -5,7 +5,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS} -O3")
 
-include_directories( BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include /usr/include/python2.7 )
+#include_directories( BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include /usr/include/python2.7 )
+include_directories( BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include )
 
 find_package(pybind11 REQUIRED)
 
