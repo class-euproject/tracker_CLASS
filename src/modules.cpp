@@ -25,19 +25,18 @@ std::tuple<std::vector<Tracker>, std::vector<bool>, int, std::vector<std::tuple<
     tracking.setAgeThreshold(age_threshold);
     tracking.trackers = trackers;
     /** TODO by BSC: Changed from private to public */
-    for (int i = 0; i < trackerIndexes.size(); i++) {
+    for (int i = 0; i < curIndex; i++) { // set only the previous 0..curIndex positions
         tracking.trackerIndexes[i] = trackerIndexes[i];
     }
-    // tracking.trackerIndexes = trackerIndexes;
     tracking.curIndex = curIndex;
     /** **/
     tracking.track(frame);
-    std::vector<bool> newTrackerIndexes(MAX_INDEX);
-    for (int i = 0; i < MAX_INDEX; i++) {
+    std::vector<bool> newTrackerIndexes(tracking.curIndex);
+    for (int i = 0; i < tracking.curIndex; i++) {
         newTrackerIndexes[i] = tracking.trackerIndexes[i];
     }
     /* Return structure to be used in the Deduplicator [lat (float), lon (float), class (int), vel (uint8_t),
-     * yaw (uint8_t] */
+     * yaw (uint8_t] */ // TODO: it should be a MasaMessage instead of tuple
     geodetic_converter::GeodeticConverter gc;
     gc.initialiseReference(44.655540, 10.934315, 0);
     std::vector<std::tuple<float, float, int, uint8_t, uint8_t>> infoForDeduplicator;
@@ -48,7 +47,7 @@ std::tuple<std::vector<Tracker>, std::vector<bool>, int, std::vector<std::tuple<
             gc.enu2Geodetic(t.traj.back().x, t.traj.back().y, 0, &lat, &lon, &alt);
             auto velocity = uint8_t(std::abs(t.predList.back().vel * 3.6 * 2));
             auto yaw = uint8_t((int((t.predList.back().yaw * 57.29 + 360)) % 360) * 17 / 24);
-            infoForDeduplicator.push_back(std::make_tuple((float) lat, (float) lon, t.cl, velocity, yaw));
+            infoForDeduplicator.emplace_back((float) lat, (float) lon, t.cl, velocity, yaw);
         }
     }
     return std::make_tuple(tracking.getTrackers(), newTrackerIndexes, tracking.curIndex, infoForDeduplicator);
@@ -66,7 +65,7 @@ PYBIND11_MODULE(track, m) {
             .def_readwrite("w", &obj_m::w)
             .def_readwrite("h", &obj_m::h)
             .def(py::pickle(
-                    [](py::object self) {
+                    [](const py::object& self) {
                         return py::make_tuple(self.attr("x"), self.attr("y"), self.attr("frame"), self.attr("cl"), self.attr("w"), self.attr("h"));
                     },
                     [](const py::tuple &t) {
@@ -91,7 +90,7 @@ PYBIND11_MODULE(track, m) {
             .def_readwrite("vel", &state::vel)
             .def_readwrite("yawRate", &state::yawRate)
             .def(py::pickle(
-                    [](py::object self) {
+                    [](const py::object& self) {
                         return py::make_tuple(self.attr("x"), self.attr("y"), self.attr("yaw"), self.attr("vel"), self.attr("yawRate"));
                     },
                     [](const py::tuple &t) {
@@ -118,7 +117,7 @@ PYBIND11_MODULE(track, m) {
             .def_readwrite("P", &EKF::P)
             .def_readwrite("H", &EKF::H)
             .def(py::pickle(
-                    [](py::object self) {
+                    [](const py::object& self) {
                         return py::make_tuple(self.attr("nStates"), self.attr("dt"), self.attr("xEst"), self.attr("Q"), self.attr("R"), self.attr("P"), self.attr("H"));
                     },
                     [](const py::tuple &t) {
@@ -157,7 +156,7 @@ PYBIND11_MODULE(track, m) {
             .def_readwrite("cl", &Tracker::cl)
             .def_readwrite("id", &Tracker::id)
             .def(py::pickle(
-                    [](py::object self){
+                    [](const py::object& self){
                         return py::make_tuple(self.attr("traj"), self.attr("zList"), self.attr("predList"), self.attr("ekf"),self.attr("age"), self.attr("r"), self.attr("g"), self.attr("b"), self.attr("cl"), self.attr("id"));
                     },
                     [](const py::tuple &t){
