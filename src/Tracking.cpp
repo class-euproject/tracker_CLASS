@@ -147,7 +147,8 @@ void Tracking::kalmanStep(const std::vector<obj_m>& new_trajs){
 }
 
 int Tracking::getTrackerIndex(){
-    for(int i = curIndex; i < curIndex + MAX_INDEX; ++i ){
+    return curIndex % MAX_INDEX;
+    /*for(int i = curIndex; i < curIndex + MAX_INDEX; ++i ){
         int index = i % MAX_INDEX;
         if(!trackerIndexes[index]){
             trackerIndexes[index] = true;
@@ -156,7 +157,7 @@ int Tracking::getTrackerIndex(){
         }
     }
     std::cerr << "\nProblem with tracker indexes, aborting...\n"; 
-    exit(EXIT_FAILURE);  
+    exit(EXIT_FAILURE);  */
 }
 
 void Tracking::track(const std::vector<obj_m> &frame, bool verbose)

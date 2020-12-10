@@ -15,17 +15,11 @@ Tracker::Tracker(const obj_m &first_point, const int initial_age, const float dt
     id = id_;
 }
 
-Tracker::Tracker(const std::vector<obj_m>& traj,const std::vector<state>& zList, const std::vector<state>& predList,const EKF& ekf,const int age, const int r, const int g, const int b, const int cl, const int id)
+Tracker::Tracker(const std::vector<obj_m>& traj, const EKF& ekf, const int age, const int cl, const int id)
 {
-
     this->traj      = traj;
-    this->zList     = zList;
-    this->predList  = predList;
     this-> ekf      = ekf;
     this->age       = age;
-    this->r         = r;
-    this->g         = g;
-    this->b         = b;
     this->cl        = cl;
     this->id        = id;
 }
