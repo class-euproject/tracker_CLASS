@@ -40,12 +40,23 @@ public:
   EKF();
   EKF(const EKF& ekf) : nStates(ekf.nStates), dt(ekf.dt), xEst(ekf.xEst), Q(ekf.Q), R(ekf.R), P(ekf.P), H(ekf.H) {};
   EKF(const int n_states, const float dt_, const EKFMatrixF &Q_, const EKFMatrixF &R_, const state &in_state);
+  EKF(const int n_states, const float dt_, const state &&state, EKFMatrixF &&P_) : nStates(n_states), dt(dt_), xEst(state), P(P_) {
+      this->Q = EKF::EKFMatrixF::Zero(nStates, nStates);
+      this->R = EKF::EKFMatrixF::Zero(nStates, nStates);
+      this->Q.diagonal() << pow(3 * dt, 2), pow(3 * dt, 2), pow(1 * dt, 2), pow(25 * dt, 2), pow(0.1 * dt, 2);
+      this->R.diagonal() << pow(0.5, 2), pow(0.5, 2), pow(0.1, 2), pow(0.8, 2), pow(0.02, 2);
+      this->H = EKF::EKFMatrixF::Identity(nStates, nStates);
+  };
   ~EKF();
   void printInternalState();
   void ekfStep(const EKFMatrixF &H_, const Eigen::VectorXf &z);
   state getEstimatedState();
 
-  EKF& operator=(EKF&& clase){
+  const state& getState() const { return xEst; };
+
+  const EKFMatrixF& getP() const { return P; };
+
+  EKF& operator=(EKF&& clase){ // move assignment
       this->nStates = clase.nStates;
       this->dt = clase.dt;
       this->xEst = clase.xEst;
@@ -56,7 +67,7 @@ public:
       return *this;
   }
 
-    EKF& operator=(const EKF& clase){
+    EKF& operator=(const EKF& clase){ // copy assignment
         this->nStates = clase.nStates;
         this->dt = clase.dt;
         this->xEst = clase.xEst;

@@ -26,10 +26,6 @@ public:
 
     const std::vector<obj_m>& getTraj() const { return traj; };
 
-    /* const std::vector<state>& getZList() const { return zList; };
-
-    const std::vector<state>& getPredList() const { return predList; }; */
-
     const EKF& getEKF() const { return ekf; };
 
 private:

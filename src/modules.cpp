@@ -26,16 +26,9 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<float, float, int, 
     tracking.setAgeThreshold(age_threshold);
     tracking.trackers = trackers;
     /** TODO by BSC: Changed from private to public */
-    /* for (int i = 0; i < curIndex; i++) { // set only the previous 0..curIndex positions
-        tracking.trackerIndexes[i] = trackerIndexes[i];
-    }*/
     tracking.curIndex = curIndex;
     /** **/
     tracking.track(frame);
-    /* std::vector<bool> newTrackerIndexes(tracking.curIndex);
-    for (int i = 0; i < tracking.curIndex; i++) {
-        newTrackerIndexes[i] = tracking.trackerIndexes[i];
-    } */
     /* Return structure to be used in the Deduplicator [lat (float), lon (float), class (int), vel (uint8_t),
      * yaw (uint8_t] */ // TODO: it should be a MasaMessage instead of tuple
     geodetic_converter::GeodeticConverter gc;
@@ -67,9 +60,8 @@ PYBIND11_MODULE(track, m) {
             .def_readwrite("w", &obj_m::w)
             .def_readwrite("h", &obj_m::h)
             .def(py::pickle(
-                    [](const py::object& self) {
-                        return py::make_tuple(self.attr("x"), self.attr("y"), self.attr("frame"),
-                                              self.attr("cl"), self.attr("w"), self.attr("h"));
+                    [](const obj_m& self) {
+                        return py::make_tuple(self.x, self.y, self.frame,self.cl, self.w, self.h);
                     },
                     [](const py::tuple &t) {
                         if (t.size() != 6)
@@ -93,9 +85,8 @@ PYBIND11_MODULE(track, m) {
             .def_readwrite("vel", &state::vel)
             .def_readwrite("yawRate", &state::yawRate)
             .def(py::pickle(
-                    [](const py::object& self) {
-                        return py::make_tuple(self.attr("x"), self.attr("y"), self.attr("yaw"),
-                                              self.attr("vel"), self.attr("yawRate"));
+                    [](const state& self) {
+                        return py::make_tuple(self.x, self.y, self.yaw, self.vel, self.yawRate);
                     },
                     [](const py::tuple &t) {
                         if (t.size() != 5)
@@ -121,39 +112,15 @@ PYBIND11_MODULE(track, m) {
             .def_readwrite("P", &EKF::P)
             //.def_readwrite("H", &EKF::H)
             .def(py::pickle(
-                    [](const py::object& self) {
+                    [](const EKF& self) {
                         // return py::make_tuple(self.attr("nStates"), self.attr("dt"), self.attr("xEst"), self.attr("Q"), self.attr("R"), self.attr("P"), self.attr("H"));
-                        return py::make_tuple(self.attr("nStates"), self.attr("dt"), self.attr("xEst"),
-                                              self.attr("P"));
+                        return py::make_tuple(self.nStates, self.dt, self.getState(), self.getP());
                     },
                     [](py::tuple &t) {
                         if (t.size() != 4)
                             throw std::runtime_error("Invalid state!");
-                        int nStates  		= t[0].cast<int>();
-                        float dt     		= t[1].cast<float>();
-                        state xEst   		= t[2].cast<state>();
-                        // Eigen::Matrix<float, -1, -1> Q	       = std::move(t[3].cast<Eigen::Matrix<float, -1, -1>>());
-                        // Eigen::Matrix<float, -1, -1> R	       = std::move(t[4].cast<Eigen::Matrix<float, -1, -1>>());
-                        Eigen::Matrix<float, -1, -1> P         = std::move(t[3].cast<Eigen::Matrix<float, -1, -1>>());
-                        // Eigen::Matrix<float, -1, -1> H         = std::move(t[6].cast<Eigen::Matrix<float, -1, -1>>());
 
-                        EKF ekf; // 	= EKF();
-                        ekf.nStates 	= nStates;
-                        ekf.dt   	= dt;
-                        ekf.xEst	= xEst;
-
-                        /** TODO: added instead of passing and copying Q, R and H */
-                        ekf.Q = EKF::EKFMatrixF::Zero(nStates, nStates);
-                        ekf.R = EKF::EKFMatrixF::Zero(nStates, nStates);
-                        ekf.Q.diagonal() << pow(3 * dt, 2), pow(3 * dt, 2), pow(1 * dt, 2), pow(25 * dt, 2), pow(0.1 * dt, 2);
-                        ekf.R.diagonal() << pow(0.5, 2), pow(0.5, 2), pow(0.1, 2), pow(0.8, 2), pow(0.02, 2);
-                        ekf.H = EKF::EKFMatrixF::Identity(nStates, nStates);
-                        /** */
-
-                        // ekf.Q		= std::move(Q);
-                        // ekf.R		= std::move(R);
-                        ekf.P		= std::move(P);
-                        // ekf.H		= std::move(H);
+                        EKF ekf(t[0].cast<int>(), t[1].cast<float>(), t[2].cast<state>(), t[3].cast<Eigen::Matrix<float, -1, -1>>());
                         return ekf;
                     }
             ));
