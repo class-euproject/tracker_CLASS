@@ -1,3 +1,5 @@
 *~
 c++/build
 *vscode*
+cmake-build-debug-remote/
+.idea/
