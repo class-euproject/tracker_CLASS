@@ -147,7 +147,8 @@ void Tracking::kalmanStep(const std::vector<obj_m>& new_trajs){
 }
 
 int Tracking::getTrackerIndex(){
-    return curIndex % MAX_INDEX;
+    curIndex++;
+    return (curIndex - 1) % MAX_INDEX;
     /*for(int i = curIndex; i < curIndex + MAX_INDEX; ++i ){
         int index = i % MAX_INDEX;
         if(!trackerIndexes[index]){
