@@ -13,15 +13,17 @@ Tracker::Tracker(const obj_m &first_point, const int initial_age, const float dt
 
     cl = first_point.cl;
     id = id_;
+    idx = 0;
 }
 
-Tracker::Tracker(const std::vector<obj_m>& traj, const EKF& ekf, const int age, const int cl, const int id)
+Tracker::Tracker(const std::vector<obj_m>& traj, const EKF& ekf, const int age, const int cl, const int id, const int idx)
 {
     this->traj      = traj;
     this-> ekf      = ekf;
     this->age       = age;
     this->cl        = cl;
     this->id        = id;
+    this->idx       = idx;
 }
 
 EKF Tracker::ekfInitialize(const float dt, const int n_states, const obj_m &first_point)

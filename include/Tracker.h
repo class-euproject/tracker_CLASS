@@ -20,9 +20,10 @@ public:
     int b;
     int cl;
     int id;
+    int idx; // added by bsc, provides relation with list_boxes
 
     Tracker(const obj_m &first_point, const int initial_age, const float dt, const int n_states, const int id_);
-    Tracker(const std::vector<obj_m>& traj,const EKF& ekf,const int age, const int cl, const int id);
+    Tracker(const std::vector<obj_m>& traj,const EKF& ekf,const int age, const int cl, const int id, const int idx);
 
     const std::vector<obj_m>& getTraj() const { return traj; };
 

@@ -82,6 +82,7 @@ void Tracking::addNewTrajectories(const std::vector<obj_m> &frame, const std::ve
     for (size_t i = 0; i < knn_res.size(); ++i){
         if (!used[i]){
             trackers.push_back(Tracker(frame[knn_res[i].objIdCurr], initialAge, dt, ekfStates, this->getTrackerIndex()));
+            trackers.back().idx = knn_res[i].objIdCurr;
             if(verbose)
                 std::cout << "Adding tracker " << trackers[trackers.size()-1].id<< std::endl;
         }
@@ -118,6 +119,7 @@ void Tracking::nearestNeighbor(const std::vector<obj_m> &frame, std::vector<knn_
             max_distance[prev_i] = dist;
             trackers[prev_i].age += 1;
             used[i] = 1;
+            trackers[prev_i].idx = cur_i;
         }
     }
 }

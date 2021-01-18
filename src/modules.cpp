@@ -37,14 +37,12 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<float, float, int, 
     double lat, lon, alt;
     for (Tracker t : tracking.getTrackers()) {
         if (!t.predList.empty()) {
-            // gc.enu2Geodetic(t.predList.back().x, t.predList.back().y, 0, &lat, &lon, &alt);
             gc.enu2Geodetic(t.traj.back().x, t.traj.back().y, 0, &lat, &lon, &alt);
             auto velocity = uint8_t(std::abs(t.ekf.xEst.vel * 3.6 * 2));
             auto yaw = uint8_t((int((t.ekf.xEst.yaw * 57.29 + 360)) % 360) * 17 / 24);
             infoForDeduplicator.emplace_back((float) lat, (float) lon, t.cl, velocity, yaw);
         }
     }
-    // return std::make_tuple(tracking.getTrackers(), newTrackerIndexes, tracking.curIndex, infoForDeduplicator);
     return std::make_tuple(tracking.getTrackers(), tracking.curIndex, infoForDeduplicator);
 }
 
@@ -137,9 +135,10 @@ PYBIND11_MODULE(track, m) {
             .def_readwrite("b", &Tracker::b) */
             .def_readwrite("cl", &Tracker::cl)
             .def_readwrite("id", &Tracker::id)
+            .def_readwrite("idx", &Tracker::idx)
             .def(py::pickle(
                     [](const Tracker& self){
-                        return py::make_tuple(self.getTraj(), self.getEKF(), self.age, self.cl, self.id);
+                        return py::make_tuple(self.getTraj(), self.getEKF(), self.age, self.cl, self.id, self.idx);
                     },
                     [](py::tuple &t){
                         std::vector<obj_m> traj = std::move(t[0].cast<std::vector<obj_m>>());
@@ -152,7 +151,8 @@ PYBIND11_MODULE(track, m) {
                         int b = t[7].cast<int>(); */
                         int classO = t[3].cast<int>();
                         int id = t[4].cast<int>();
-                        Tracker tracker(traj, ekf, age, classO, id);
+                        int idx = t[5].cast<int>();
+                        Tracker tracker(traj, ekf, age, classO, id, idx);
                         return tracker;
                     }
             ));
