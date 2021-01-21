@@ -35,13 +35,17 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<float, float, int, 
     gc.initialiseReference(44.655540, 10.934315, 0);
     std::vector<std::tuple<float, float, int, uint8_t, uint8_t>> infoForDeduplicator;
     double lat, lon, alt;
+    uint8_t velocity, yaw;
     for (Tracker t : tracking.getTrackers()) {
+	velocity = yaw = 0;
+        gc.enu2Geodetic(t.traj.back().x, t.traj.back().y, 0, &lat, &lon, &alt);
         if (!t.predList.empty()) {
-            gc.enu2Geodetic(t.traj.back().x, t.traj.back().y, 0, &lat, &lon, &alt);
-            auto velocity = uint8_t(std::abs(t.ekf.xEst.vel * 3.6 * 2));
-            auto yaw = uint8_t((int((t.ekf.xEst.yaw * 57.29 + 360)) % 360) * 17 / 24);
-            infoForDeduplicator.emplace_back((float) lat, (float) lon, t.cl, velocity, yaw);
+            //gc.enu2Geodetic(t.traj.back().x, t.traj.back().y, 0, &lat, &lon, &alt);
+            velocity = uint8_t(std::abs(t.ekf.xEst.vel * 3.6 * 2));
+            yaw = uint8_t((int((t.ekf.xEst.yaw * 57.29 + 360)) % 360) * 17 / 24);
+            //infoForDeduplicator.emplace_back((float) lat, (float) lon, t.cl, velocity, yaw);
         }
+        infoForDeduplicator.emplace_back((float) lat, (float) lon, t.cl, velocity, yaw);
     }
     return std::make_tuple(tracking.getTrackers(), tracking.curIndex, infoForDeduplicator);
 }
