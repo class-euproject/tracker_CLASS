@@ -37,7 +37,7 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<float, float, int, 
     double lat, lon, alt;
     uint8_t velocity, yaw;
     for (Tracker t : tracking.getTrackers()) {
-	velocity = yaw = 0;
+	    velocity = yaw = 0;
         gc.enu2Geodetic(t.traj.back().x, t.traj.back().y, 0, &lat, &lon, &alt);
         if (!t.predList.empty()) {
             //gc.enu2Geodetic(t.traj.back().x, t.traj.back().y, 0, &lat, &lon, &alt);
