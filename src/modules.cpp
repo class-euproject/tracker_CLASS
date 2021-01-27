@@ -16,7 +16,7 @@ using namespace tracking;
 
 /*std::tuple<std::vector<Tracker>, std::vector<bool>, int, std::vector<std::tuple<float, float, int, uint8_t, uint8_t>>>
         track2(std::vector<obj_m>& frame, std::vector<Tracker> &trackers, std::vector<bool> &trackerIndexes, int curIndex)*/
-std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<float, float, int, uint8_t, uint8_t>>>
+std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<double, double, int, uint8_t, uint8_t>>>
         track2(std::vector<obj_m>& frame, std::vector<Tracker> &trackers, int curIndex)
 {
     int initial_age = -5, age_threshold = -8, n_states = 5;
@@ -33,19 +33,19 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<float, float, int, 
      * yaw (uint8_t] */ // TODO: it should be a MasaMessage instead of tuple
     geodetic_converter::GeodeticConverter gc;
     gc.initialiseReference(44.655540, 10.934315, 0);
-    std::vector<std::tuple<float, float, int, uint8_t, uint8_t>> infoForDeduplicator;
+    std::vector<std::tuple<double, double, int, uint8_t, uint8_t>> infoForDeduplicator;
     double lat, lon, alt;
     uint8_t velocity, yaw;
     for (Tracker t : tracking.getTrackers()) {
 	    velocity = yaw = 0;
-        gc.enu2Geodetic(t.traj.back().x, t.traj.back().y, 0, &lat, &lon, &alt);
+        gc.enu2Geodetic(t.traj.back().y, t.traj.back().x, 0, &lat, &lon, &alt); // y -> east, x -> north
+        /*std::cout << std::setprecision(10) << "EAST FIRST north (traj x): " << t.traj.back().x << " east (traj y): " << t.traj.back().y
+                  << " lat: " << lat << " lon: " << lon << std::endl;*/
         if (!t.predList.empty()) {
-            //gc.enu2Geodetic(t.traj.back().x, t.traj.back().y, 0, &lat, &lon, &alt);
             velocity = uint8_t(std::abs(t.ekf.xEst.vel * 3.6 * 2));
             yaw = uint8_t((int((t.ekf.xEst.yaw * 57.29 + 360)) % 360) * 17 / 24);
-            //infoForDeduplicator.emplace_back((float) lat, (float) lon, t.cl, velocity, yaw);
         }
-        infoForDeduplicator.emplace_back((float) lat, (float) lon, t.cl, velocity, yaw);
+        infoForDeduplicator.emplace_back(lat, lon, t.cl, velocity, yaw);
     }
     return std::make_tuple(tracking.getTrackers(), tracking.curIndex, infoForDeduplicator);
 }
@@ -54,7 +54,7 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<float, float, int, 
 PYBIND11_MODULE(track, m) {
 
     py::class_<obj_m>(m, "obj_m")
-            .def(py::init<const float, const float, const int, const int, const int, const int>())
+            .def(py::init<const double, const double, const int, const int, const int, const int>())
             .def_readwrite("x", &obj_m::x)
             .def_readwrite("y", &obj_m::y)
             .def_readwrite("frame", &obj_m::frame)
@@ -68,8 +68,8 @@ PYBIND11_MODULE(track, m) {
                     [](const py::tuple &t) {
                         if (t.size() != 6)
                             throw std::runtime_error("Invalid state!");
-                        float x       = t[0].cast<float>();
-                        float y       = t[1].cast<float>();
+                        double x       = t[0].cast<double>();
+                        double y       = t[1].cast<double>();
                         int frame     = t[2].cast<int>();
                         int classO    = t[3].cast<int>();
                         int w         = t[4].cast<int>();
