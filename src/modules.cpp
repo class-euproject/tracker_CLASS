@@ -25,7 +25,7 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<double, double, int
     Tracking tracking(n_states, dt, initial_age);
     tracking.setAgeThreshold(age_threshold);
     tracking.trackers = trackers;
-    /** TODO by BSC: Changed from private to public */
+    /** Added by BSC: Changed from private to public */
     tracking.curIndex = curIndex;
     /** **/
     tracking.track(frame);
@@ -38,9 +38,11 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<double, double, int
     uint8_t velocity, yaw;
     for (Tracker t : tracking.getTrackers()) {
 	    velocity = yaw = 0;
-        gc.enu2Geodetic(t.traj.back().y, t.traj.back().x, 0, &lat, &lon, &alt); // y -> east, x -> north
-        /*std::cout << std::setprecision(10) << "EAST FIRST north (traj x): " << t.traj.back().x << " east (traj y): " << t.traj.back().y
-                  << " lat: " << lat << " lon: " << lon << std::endl;*/
+        //gc.enu2Geodetic(t.traj.back().y, t.traj.back().x, 0, &lat, &lon, &alt); // y -> east, x -> north
+        lat = frame[t.idx].lat;
+        lon = frame[t.idx].lon;
+        std::cout << std::setprecision(10) << "Tracker 20939_" << t.id << ": EAST FIRST north (traj x): " << t.traj.back().x
+                  << " east (traj y): " << t.traj.back().y << " lat: " << lat << " lon: " << lon << std::endl;
         if (!t.predList.empty()) {
             velocity = uint8_t(std::abs(t.ekf.xEst.vel * 3.6 * 2));
             yaw = uint8_t((int((t.ekf.xEst.yaw * 57.29 + 360)) % 360) * 17 / 24);
@@ -54,19 +56,22 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<double, double, int
 PYBIND11_MODULE(track, m) {
 
     py::class_<obj_m>(m, "obj_m")
-            .def(py::init<const double, const double, const int, const int, const int, const int>())
+            .def(py::init<const double, const double, const int, const int, const int, const int, const double,
+                    const double>())
             .def_readwrite("x", &obj_m::x)
             .def_readwrite("y", &obj_m::y)
             .def_readwrite("frame", &obj_m::frame)
             .def_readwrite("cl", &obj_m::cl)
             .def_readwrite("w", &obj_m::w)
             .def_readwrite("h", &obj_m::h)
+            .def_readwrite("lat", &obj_m::lat)
+            .def_readwrite("lon", &obj_m::lon)
             .def(py::pickle(
                     [](const obj_m& self) {
-                        return py::make_tuple(self.x, self.y, self.frame,self.cl, self.w, self.h);
+                        return py::make_tuple(self.x, self.y, self.frame,self.cl, self.w, self.h, self.lat, self.lon);
                     },
                     [](const py::tuple &t) {
-                        if (t.size() != 6)
+                        if (t.size() != 8)
                             throw std::runtime_error("Invalid state!");
                         double x       = t[0].cast<double>();
                         double y       = t[1].cast<double>();
@@ -74,8 +79,10 @@ PYBIND11_MODULE(track, m) {
                         int classO    = t[3].cast<int>();
                         int w         = t[4].cast<int>();
                         int h         = t[5].cast<int>();
+                        double lat    = t[6].cast<double>();
+                        double lon    = t[7].cast<double>();
 
-                        obj_m data = obj_m(x, y, frame, classO, w, h);
+                        obj_m data = obj_m(x, y, frame, classO, w, h, lat, lon);
                         return data;
                     }
             ));

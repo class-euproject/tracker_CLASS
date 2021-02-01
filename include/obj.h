@@ -16,9 +16,12 @@ struct obj_m{
     int cl      = -1;
     int w       = 0;
     int h       = 0;
+    double lat = 0;
+    double lon = 0;
 
     obj_m(){}
-    obj_m(const double x_, const double y_, const int frame_, const int cl_, const int width, const int height) : x(x_), y(y_), frame(frame_), cl(cl_), w(width), h(height) {}
+    obj_m(const double x_, const double y_, const int frame_, const int cl_, const int width, const int height,
+          const double lat_, const double lon_) : x(x_), y(y_), frame(frame_), cl(cl_), w(width), h(height), lat(lat_), lon(lon_) {}
     void print();
 };
 }
