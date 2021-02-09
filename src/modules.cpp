@@ -38,7 +38,6 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<double, double, int
     double lat, lon;
     uint8_t velocity, yaw;
     int pixel_x, pixel_y, pixel_w, pixel_h;
-    double width, height;
     for (const Tracker& t : tracking.getTrackers()) {
 	    velocity = yaw = 0;
         //gc.enu2Geodetic(t.traj.back().y, t.traj.back().x, 0, &lat, &lon, &alt); // y -> east, x -> north
@@ -62,7 +61,7 @@ PYBIND11_MODULE(track, m) {
 
     py::class_<obj_m>(m, "obj_m")
             .def(py::init<const double, const double, const int, const int, const int, const int, const double,
-                    const double, const int, const int>())
+                    const double, const int, const int, const float>())
             .def_readwrite("x", &obj_m::x)
             .def_readwrite("y", &obj_m::y)
             .def_readwrite("frame", &obj_m::frame)
@@ -73,26 +72,29 @@ PYBIND11_MODULE(track, m) {
             .def_readwrite("lon", &obj_m::lon)
             .def_readwrite("pixel_x", &obj_m::pixel_x)
             .def_readwrite("pixel_y", &obj_m::pixel_y)
+            .def_readwrite("precision", &obj_m::precision)
             .def(py::pickle(
                     [](const obj_m& self) {
                         return py::make_tuple(self.x, self.y, self.frame,self.cl, self.w, self.h, self.lat, self.lon,
-                                              self.pixel_x, self.pixel_y);
+                                              self.pixel_x, self.pixel_y, self.precision);
                     },
                     [](const py::tuple &t) {
                         if (t.size() != 8)
                             throw std::runtime_error("Invalid state!");
-                        double x       = t[0].cast<double>();
-                        double y       = t[1].cast<double>();
-                        int frame     = t[2].cast<int>();
-                        int classO    = t[3].cast<int>();
-                        int w         = t[4].cast<int>(); // width of box in pixels
-                        int h         = t[5].cast<int>();
-                        double lat    = t[6].cast<double>();
-                        double lon    = t[7].cast<double>();
-                        int pixel_x   = t[8].cast<int>();
-                        int pixel_y   = t[9].cast<int>();
+                        double x        = t[0].cast<double>();
+                        double y        = t[1].cast<double>();
+                        int frame       = t[2].cast<int>();
+                        int classO      = t[3].cast<int>();
+                        int w           = t[4].cast<int>(); // width of box in pixels
+                        int h           = t[5].cast<int>();
+                        double lat      = t[6].cast<double>();
+                        double lon      = t[7].cast<double>();
+                        int pixel_x     = t[8].cast<int>();
+                        int pixel_y     = t[9].cast<int>();
+                        float precision = t[10].cast<float>();
 
-                        obj_m data = obj_m(x, y, frame, classO, w, h, lat, lon, pixel_x, pixel_y);
+                        obj_m data = obj_m(x, y, frame, classO, w, h, lat, lon, pixel_x, pixel_y, precision);
+                        // TODO: check which value of precision should be passed
                         return data;
                     }
             ));
@@ -162,7 +164,7 @@ PYBIND11_MODULE(track, m) {
                         return py::make_tuple(self.getTraj(), self.getEKF(), self.age, self.cl, self.id, self.idx);
                     },
                     [](py::tuple &t){
-                        std::vector<obj_m> traj = std::move(t[0].cast<std::vector<obj_m>>());
+                        std::deque<obj_m> traj = std::move(t[0].cast<std::deque<obj_m>>());
                         // std::vector<state> zList = std::move(t[1].cast<std::vector<state>>());
                         // std::vector<state> predList = std::move(t[2].cast<std::vector<state>>());
                         EKF ekf = std::move(t[1].cast<EKF>());

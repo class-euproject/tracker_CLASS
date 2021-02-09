@@ -4,15 +4,17 @@
 #include "ekf.h"
 #include "obj.h"
 #include <cstdlib>
+#include <deque>
 
+#define MAX_HISTORY 200 
 
 namespace tracking {
 class Tracker
 {
 public:
-    std::vector<obj_m> traj;
-    std::vector<state> zList;
-    std::vector<state> predList;
+    std::deque<obj_m> traj;
+    std::deque<state> zList;
+    std::deque<state> predList;
     EKF ekf;
     int age;
     int r;
@@ -23,9 +25,9 @@ public:
     int idx; // added by bsc, provides relation with list_boxes
 
     Tracker(const obj_m &first_point, const int initial_age, const float dt, const int n_states, const int id_);
-    Tracker(const std::vector<obj_m>& traj,const EKF& ekf,const int age, const int cl, const int id, const int idx);
+    Tracker(const std::deque<obj_m>& traj,const EKF& ekf,const int age, const int cl, const int id, const int idx);
 
-    const std::vector<obj_m>& getTraj() const { return traj; };
+    const std::deque<obj_m>& getTraj() const { return traj; };
 
     const EKF& getEKF() const { return ekf; };
 

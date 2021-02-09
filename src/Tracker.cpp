@@ -16,10 +16,10 @@ Tracker::Tracker(const obj_m &first_point, const int initial_age, const float dt
     idx = 0;
 }
 
-Tracker::Tracker(const std::vector<obj_m>& traj, const EKF& ekf, const int age, const int cl, const int id, const int idx)
+Tracker::Tracker(const std::deque<obj_m>& traj, const EKF& ekf, const int age, const int cl, const int id, const int idx)
 {
     this->traj      = traj;
-    this-> ekf      = ekf;
+    this->ekf      = ekf;
     this->age       = age;
     this->cl        = cl;
     this->id        = id;
