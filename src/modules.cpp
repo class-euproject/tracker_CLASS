@@ -35,21 +35,23 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<double, double, int
     gc.initialiseReference(44.655540, 10.934315, 0);
     std::vector<std::tuple<double, double, int, uint8_t, uint8_t, int, int, int, int, int>>
             infoForDeduplicator; // TODO: restructure order
-    double lat, lon;
+    double lat, lon, alt;
     uint8_t velocity, yaw;
     int pixel_x, pixel_y, pixel_w, pixel_h;
     for (const Tracker& t : tracking.getTrackers()) {
 	    velocity = yaw = 0;
-        //gc.enu2Geodetic(t.traj.back().y, t.traj.back().x, 0, &lat, &lon, &alt); // y -> east, x -> north
-        lat = frame[t.idx].lat;
-        lon = frame[t.idx].lon;
+        /*lat = frame[t.idx].lat;
+        lon = frame[t.idx].lon;*/
         pixel_x = frame[t.idx].pixel_x;
         pixel_y = frame[t.idx].pixel_y;
         pixel_w = frame[t.idx].w;
         pixel_h = frame[t.idx].h;
         if (!t.predList.empty()) {
+            gc.enu2Geodetic(t.predList.back().y, t.predList.back().x, 0, &lat, &lon, &alt); // y -> east, x -> north
             velocity = uint8_t(std::abs(t.ekf.xEst.vel * 3.6 * 2));
             yaw = uint8_t((int((t.ekf.xEst.yaw * 57.29 + 360)) % 360) * 17 / 24);
+        } else {
+            gc.enu2Geodetic(t.traj.back().y, t.traj.back().x, 0, &lat, &lon, &alt); // y -> east, x -> north
         }
         infoForDeduplicator.emplace_back(lat, lon, t.cl, velocity, yaw, t.id, pixel_x, pixel_y, pixel_w, pixel_h);
     }
@@ -60,23 +62,21 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<double, double, int
 PYBIND11_MODULE(track, m) {
 
     py::class_<obj_m>(m, "obj_m")
-            .def(py::init<const double, const double, const int, const int, const int, const int, const double,
-                    const double, const int, const int, const float>())
+            .def(py::init<const double, const double, const int, const int, const int, const int, const int, const int,
+                    const float>())
             .def_readwrite("x", &obj_m::x)
             .def_readwrite("y", &obj_m::y)
             .def_readwrite("frame", &obj_m::frame)
             .def_readwrite("cl", &obj_m::cl)
             .def_readwrite("w", &obj_m::w)
             .def_readwrite("h", &obj_m::h)
-            .def_readwrite("lat", &obj_m::lat)
-            .def_readwrite("lon", &obj_m::lon)
             .def_readwrite("pixel_x", &obj_m::pixel_x)
             .def_readwrite("pixel_y", &obj_m::pixel_y)
             .def_readwrite("precision", &obj_m::precision)
             .def(py::pickle(
                     [](const obj_m& self) {
-                        return py::make_tuple(self.x, self.y, self.frame,self.cl, self.w, self.h, self.lat, self.lon,
-                                              self.pixel_x, self.pixel_y, self.precision);
+                        return py::make_tuple(self.x, self.y, self.frame,self.cl, self.w, self.h, self.pixel_x,
+                                              self.pixel_y, self.precision);
                     },
                     [](const py::tuple &t) {
                         if (t.size() != 8)
@@ -87,13 +87,11 @@ PYBIND11_MODULE(track, m) {
                         int classO      = t[3].cast<int>();
                         int w           = t[4].cast<int>(); // width of box in pixels
                         int h           = t[5].cast<int>();
-                        double lat      = t[6].cast<double>();
-                        double lon      = t[7].cast<double>();
-                        int pixel_x     = t[8].cast<int>();
-                        int pixel_y     = t[9].cast<int>();
-                        float precision = t[10].cast<float>();
+                        int pixel_x     = t[6].cast<int>();
+                        int pixel_y     = t[7].cast<int>();
+                        float precision = t[8].cast<float>();
 
-                        obj_m data = obj_m(x, y, frame, classO, w, h, lat, lon, pixel_x, pixel_y, precision);
+                        obj_m data = obj_m(x, y, frame, classO, w, h, pixel_x, pixel_y, precision);
                         // TODO: check which value of precision should be passed
                         return data;
                     }
