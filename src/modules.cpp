@@ -36,20 +36,25 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<double, double, int
     double lat, lon, alt;
     uint8_t velocity, yaw;
     int pixel_x, pixel_y, pixel_w, pixel_h;
+    int frame_id = frame[0].frame;
     for (const Tracker& t : tracking.getTrackers()) {
 	    velocity = yaw = 0;
-        pixel_x = frame[t.idx].pixel_x;
-        pixel_y = frame[t.idx].pixel_y;
-        pixel_w = frame[t.idx].w;
-        pixel_h = frame[t.idx].h;
-        if (!t.predList.empty()) {
-            gc.enu2Geodetic(t.predList.back().y, t.predList.back().x, 0, &lat, &lon, &alt); // y -> east, x -> north
-            velocity = uint8_t(std::abs(t.ekf.xEst.vel * 3.6 * 2));
-            yaw = uint8_t((int((t.ekf.xEst.yaw * 57.29 + 360)) % 360) * 17 / 24);
-        } else {
-            gc.enu2Geodetic(t.traj.back().y, t.traj.back().x, 0, &lat, &lon, &alt); // y -> east, x -> north
-        }
-        infoForDeduplicator.emplace_back(lat, lon, t.cl, velocity, yaw, t.id, pixel_x, pixel_y, pixel_w, pixel_h);
+	    // if frame from t.traj.back().frame is not the same as the one passed in frame_id, skip this
+	    // tracker as it is an old object not present in current frame
+	    if (t.traj.back().frame == frame_id) {
+            pixel_x = frame[t.idx].pixel_x;
+            pixel_y = frame[t.idx].pixel_y;
+            pixel_w = frame[t.idx].w;
+            pixel_h = frame[t.idx].h;
+            if (!t.predList.empty()) {
+                gc.enu2Geodetic(t.predList.back().y, t.predList.back().x, 0, &lat, &lon, &alt); // y -> east, x -> north
+                velocity = uint8_t(std::abs(t.ekf.xEst.vel * 3.6 * 2));
+                yaw = uint8_t((int((t.ekf.xEst.yaw * 57.29 + 360)) % 360) * 17 / 24);
+            } else {
+                gc.enu2Geodetic(t.traj.back().y, t.traj.back().x, 0, &lat, &lon, &alt); // y -> east, x -> north
+            }
+            infoForDeduplicator.emplace_back(lat, lon, t.cl, velocity, yaw, t.id, pixel_x, pixel_y, pixel_w, pixel_h);
+	    }
     }
     return std::make_tuple(tracking.getTrackers(), tracking.curIndex, infoForDeduplicator);
 }
@@ -131,7 +136,8 @@ PYBIND11_MODULE(track, m) {
                         if (t.size() != 4)
                             throw std::runtime_error("Invalid state, crashed in ekf binding serialization!!");
 
-                        EKF ekf(t[0].cast<int>(), t[1].cast<float>(), t[2].cast<state>(), t[3].cast<Eigen::Matrix<float, -1, -1>>());
+                        EKF ekf(t[0].cast<int>(), t[1].cast<float>(), t[2].cast<state>(),
+                                t[3].cast<Eigen::Matrix<float, -1, -1>>());
                         return ekf;
                     }
             ));

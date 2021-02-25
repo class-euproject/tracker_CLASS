@@ -1,10 +1,10 @@
 # tracker_CLASS
 
-  
+This branch has been developed by BSC based on the code provided by Università di Modena e Reggio Emilia.  
 
 This is an implementation of an Extended Kalman Filter based tracker.
 
-There is both an implementation in C++ and in Matlab.
+There is both an implementation in C++.
 
 The idea was to develop a fast method to track objects from a pole-mounted camera. A visual tracker would have been too slow, therefore an EFK has been adopted. The idea is that after a Convolutional Neural Network (CNN) detects the bounding-boxes of the objects, the central bottom point of the bounding box is taken as a reference of that object and on that the tracker is instantiated.
 
@@ -22,14 +22,14 @@ While the state transition adopted:
 ## Dependencies 
 
 ```
-sudo apt-get install libeigen3-dev libflann-dev python3-matplotlib python-dev python-dev libflann-dev
+sudo apt-get install libeigen3-dev libflann-dev python3-matplotlib python-dev python3-dev 
 
 ```
 
 ## Run the c++ code
 ```
-git clone https://github.com/mive93/tracker_CLASS
-cd tracker_CLASS/c++
+git clone https://github.com/class-euproject/tracker_CLASS.git -b bsc
+cd tracker_CLASS/
 mkdir build
 cd build
 ```
@@ -43,7 +43,6 @@ cmake -DCMAKE_BUILD_TYPE=Debug ..
 and finally
 ```
 make
-./tracker
 ```
   
 
