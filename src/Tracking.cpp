@@ -28,7 +28,8 @@ std::vector<knn_infos> computeDistance(const std::vector<obj_m> &old_points, con
                 infos.dist = dist;
             }
             else{
-                if (dist < infos.dist && old_points[j].cl == new_points[i].cl){
+                // if (dist < infos.dist && old_points[j].cl == new_points[i].cl){
+                if (dist < infos.dist && dist < 8 && old_points[j].cl == new_points[i].cl){
                     infos.objIdPrev = j;
                     infos.dist = dist;
                 }
@@ -39,11 +40,10 @@ std::vector<knn_infos> computeDistance(const std::vector<obj_m> &old_points, con
 
     std::sort(knn_res.begin(), knn_res.end(), compareKnn_infos);
 
-    /* for(auto r: knn_res){
-        for(auto i: r)
-            std::cout<<i<<" ";
-        std::cout<<std::endl;
-    } */
+    std::cout << "KNN RES IN COMPUTE DISTANCE (objIdCurr objIdPrev dist):" << std::endl;
+    for(auto r: knn_res){
+        std::cout << r.objIdCurr << " " << r.objIdPrev << " " << r.dist << std::endl;
+    }
 
     return knn_res;
 }
@@ -69,8 +69,9 @@ void Tracking::deleteOldTrajectories(bool verbose){
                 trackerIndexes[trackers[i].id] = false;
                 if(verbose){
                     std::cout << "Deleting tracker " << trackers[i].id<< std::endl;
-                    if (trackers[i].zList.size() > 10)
+                    /*if (trackers[i].zList.size() > 10)
                         plotTruthvsPred(trackers[i].zList, trackers[i].predList);
+                    */
                 }
             }
         }
@@ -100,7 +101,8 @@ void Tracking::nearestNeighbor(const std::vector<obj_m> &frame, std::vector<knn_
 
     knn_res = computeDistance(prev_trajs, frame);
     used.resize(knn_res.size(), 0);
-    std::vector<float> max_distance(n_cur_trajs, 15);
+    // std::vector<float> max_distance(n_cur_trajs, 15);
+    std::vector<float> max_distance(n_cur_trajs, 8);
 
     for (size_t i = 0; i < trackers.size(); i++)
         trackers[i].age--;
@@ -121,6 +123,9 @@ void Tracking::nearestNeighbor(const std::vector<obj_m> &frame, std::vector<knn_
             trackers[prev_i].age += 1;
             used[i] = 1;
             trackers[prev_i].idx = cur_i;
+            std::cout << "Tracker " << trackers[prev_i].id << " was pointing to " << prev_i << " and now " << cur_i
+                    << "(" << frame[cur_i].pixel_x << " " << frame[cur_i].pixel_y << " " << frame[cur_i].w << " "
+                    << frame[cur_i].h << " " << frame[cur_i].x << " " << frame[cur_i].y << ")" << std::endl;
         }
     }
 }
@@ -203,9 +208,10 @@ void Tracking::trackOnGivenData(const std::vector<obj_m> &data, bool verbose)
     }
 
     if(verbose){
-        for (size_t i = 0; i < trackers.size(); i++)
+        /*for (size_t i = 0; i < trackers.size(); i++)
             if (trackers[i].zList.size() > 10)
                 plotTruthvsPred(trackers[i].zList, trackers[i].predList);
+        */
     }
 
     std::cout << "End." << std::endl;
