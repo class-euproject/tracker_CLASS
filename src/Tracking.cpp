@@ -69,8 +69,8 @@ void Tracking::deleteOldTrajectories(bool verbose){
                 trackerIndexes[trackers[i].id] = false;
                 if(verbose){
                     std::cout << "Deleting tracker " << trackers[i].id<< std::endl;
-                    if (trackers[i].zList.size() > 10)
-                        plotTruthvsPred(trackers[i].zList, trackers[i].predList);
+                    /*if (trackers[i].zList.size() > 10)
+                        plotTruthvsPred(trackers[i].zList, trackers[i].predList);*/
                 }
             }
         }
@@ -196,9 +196,10 @@ void Tracking::trackOnGivenData(const std::vector<obj_m> &data, bool verbose)
     }
 
     if(verbose){
-        for (size_t i = 0; i < trackers.size(); i++)
+        /*for (size_t i = 0; i < trackers.size(); i++)
             if (trackers[i].zList.size() > 10)
                 plotTruthvsPred(trackers[i].zList, trackers[i].predList);
+	*/
     }
 
     std::cout << "End." << std::endl;
