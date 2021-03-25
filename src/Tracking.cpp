@@ -40,10 +40,10 @@ std::vector<knn_infos> computeDistance(const std::vector<obj_m> &old_points, con
 
     std::sort(knn_res.begin(), knn_res.end(), compareKnn_infos);
 
-    std::cout << "KNN RES IN COMPUTE DISTANCE (objIdCurr objIdPrev dist):" << std::endl;
+    /*std::cout << "KNN RES IN COMPUTE DISTANCE (objIdCurr objIdPrev dist):" << std::endl;
     for(auto r: knn_res){
         std::cout << r.objIdCurr << " " << r.objIdPrev << " " << r.dist << std::endl;
-    }
+    }*/
 
     return knn_res;
 }
@@ -123,9 +123,10 @@ void Tracking::nearestNeighbor(const std::vector<obj_m> &frame, std::vector<knn_
             trackers[prev_i].age += 1;
             used[i] = 1;
             trackers[prev_i].idx = cur_i;
-            std::cout << "Tracker " << trackers[prev_i].id << " was pointing to " << prev_i << " and now " << cur_i
+            /*std::cout << "Tracker " << trackers[prev_i].id << " was pointing to " << prev_i << " and now " << cur_i
                     << "(" << frame[cur_i].pixel_x << " " << frame[cur_i].pixel_y << " " << frame[cur_i].w << " "
                     << frame[cur_i].h << " " << frame[cur_i].x << " " << frame[cur_i].y << ")" << std::endl;
+            */
         }
     }
 }
