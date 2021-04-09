@@ -36,7 +36,9 @@ std::tuple<std::vector<Tracker>, int, std::vector<std::tuple<double, double, int
     double lat, lon, alt;
     uint8_t velocity, yaw;
     int pixel_x, pixel_y, pixel_w, pixel_h;
-    int frame_id = frame[0].frame;
+    int frame_id = -1;
+    if (frame.size() > 0)
+        frame_id = frame[0].frame;
     for (const Tracker& t : tracking.getTrackers()) {
 	    velocity = yaw = 0;
 	    // if frame from t.traj.back().frame is not the same as the one passed in frame_id, skip this
